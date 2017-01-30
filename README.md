@@ -1,4 +1,4 @@
-# Starter project with TypeScript
+# es6 Starter kit
 
 ## Usage
 Install dependencies
