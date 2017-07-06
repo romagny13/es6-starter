@@ -1,107 +1,283 @@
-# es6 Starter kit
+# es6 Starter
+
+> Ultra Light version
 
 ## Usage
+
 Install dependencies
 
 ```
 npm i
 ```
-In development (webpack dev server)
+
+* Dev (run example)
+
 ```
 npm run dev
 ```
-Test (Karma + PhantomJS)
+Go http://localhost:8080/
+
+* Build
+
 ```
-npm run test
-```
-Lint (esLint)
-```
-npm run lint
-```
-Build (Webpack or Rollup)
-```
-npm run build:webpack
 npm run build
 ```
 
+* Test (Karma + PhantomJS)
+```
+npm run test
+```
 
-## Memento (Steps)
+* eslint
+```
+npm run lint
+```
 
-### 1. Create package.json
+## Memento
+
+### Before
+
+Install globally
+
+```
+npm i karma cross-env eslint -g
+```
+VS Code Extensions:
+* eslint for Visual Studio Code
+
+### package.json
 ```
 npm init -f
 ```
 
-### 2. Babel
+### Webpack + Babel
+
+```
+npm i webpack -D
+```
+
+Babel
 
 ```
 npm i babel-cli babel-loader babel-preset-latest -D
 ```
-### 3. Create ".babelrc"
-```
+
+.babelrc
+
+```json
 {
   "presets": ["latest"]
 }
 ```
 
-### 4. Create "src" and "dist" directories
-with "src/main.js"
+### Build
 
-### 5. Test
+Simple
+
+```js
+var path = require('path'),
+    webpack = require('webpack');
+
+module.exports = {
+    entry: './src/index.js',
+    output: {
+        path: path.resolve(__dirname, "./dist"),
+        publicPath: "/dist/",
+        filename: 'mylib.js',
+        libraryTarget: 'umd',
+        library: 'MyLib'
+    },
+    module: {
+        rules: [
+            { test: /\.js$/, exclude: [/node_modules/], use: "babel-loader" }
+        ]
+    }
+};
+```
+
+Plugins (minification, etc.)
+
+```js
+var path = require('path'),
+    webpack = require('webpack');
+
+module.exports = {
+    entry: './src/index.js',
+    output: {
+        path: path.resolve(__dirname, "./dist"),
+        publicPath: "/dist/",
+        filename: 'mylib.min.js',
+        libraryTarget: 'umd',
+        library: 'MyLib'
+    },
+    module: {
+        rules: [
+            { test: /\.js$/, exclude: [/node_modules/], use: "babel-loader" }
+        ]
+    },
+    plugins: [
+        new webpack.LoaderOptionsPlugin({
+            minimize: true,
+            debug: false
+        }),
+        new webpack.optimize.UglifyJsPlugin({
+            beautify: false,
+            mangle: {
+                screw_ie8: true,
+                keep_fnames: true
+            },
+            compress: {
+                screw_ie8: true
+            },
+            comments: false
+        })
+    ]
+};
+```
+
+NPM Script
+
+```json
+"scripts": {
+    "build": "webpack --progress --hide-modules"
+}
+```
+
+or if config file is not "webpack.config.js"
+
+```json
+"scripts": {
+    "build": "webpack --config webpack.prod --progress --hide-modules"
+}
+```
+
+```
+npm run build
+```
+
+### Dev Server
+
+```
+npm i webpack-dev-server -D
+```
+
+```js
+var path = require('path'),
+    webpack = require('webpack');
+
+module.exports = {
+    entry: './example/es6/index.js',
+    output: {
+        path: path.resolve(__dirname, "./dist"),
+        publicPath: "/dist/",
+        filename: 'build.js'
+    },
+    module: {
+        rules: [
+            { test: /\.js$/, exclude: [/node_modules/], use: "babel-loader" }
+        ]
+    },
+    devServer: {
+        contentBase: './example/es6',
+        historyApiFallback: true,
+        noInfo: true
+    },
+    devtool: "#eval-source-map"
+};
+```
+
+NPM Script
+```json
+"scripts": {
+    "dev": "webpack-dev-server --config webpack.dev --open --inline --hot"
+},
+```
+
+```
+npm run dev
+```
+
+### Test
+
 Mocha
-```
-npm i chai mocha -D
-```
-types
-```
-npm i @types/chai @types/mocha -D
-```
-Jasmine
-TODO
 
-### 6. Karma
-Create "karma.conf.js"
 ```
-karma init
+npm i chai mocha @types/chai @types/mocha -D
 ```
-With Mocha
+
+Karma
+
+```
+npm i karma -D
+```
+
 ```
 npm i karma karma-mocha karma-phantomjs-launcher karma-webpack -D
 ```
 
-singleRun .. true
-
-### 7. Webpack
+karma.conf.js
 ```
-npm i  webpack webpack-dev-server -D
+karma init
 ```
 
-### 8. NPM Scripts
-```
-npm i cross-env -D
-```
-In development
-```
-npm run dev
-```
-Test
-```
-npm run test
-```
-Lint
-```
-npm run lint
+Mocha + PhantomJS + patterns ('test/index.js' and 'src/**/*.spec.ts')
+
+files 
+```js
+files: [
+      'node_modules/babel-polyfill/browser.js',
+      './test/index.js',
+      './src/**/*.spec.js'
+    ],
 ```
 
-### 9. Build
-Rollup
+preprocessors
+```js
+ preprocessors: {
+            'test/index.js': ['webpack'],
+            'src/**/*.spec.js': ['webpack']
+        },
 ```
-npm i rollup rollup-plugin-buble uglify-js -D
+
+webpack
+```js
+webpack: {
+      module: {
+        rules: [
+          { test: /\.js$/, exclude: [/node_modules/], use: "babel-loader" }
+        ]
+      }
+    },
+
+    webpackMiddleware: {
+      stats: {
+        colors: true,
+        chunks: false
+      }
+    },
 ```
-Create directory "build" with rollup configuration
 
+plugins
+```js
+ plugins: [
+            require('karma-webpack'),
+            require('karma-mocha'),
+            require('karma-phantomjs-launcher')
+        ],
+```
 
-### 10. Editor config
+NPM Script
+```json
+"scripts": {
+    "test": "karma start"
+  },
+```
+
+```
+npm test
+```
+
+### Editor config
 
 Create file ".editorconfig"
 
@@ -109,21 +285,45 @@ http://editorconfig.org/
 
 Editor : Visual Studio Code
 
-### 11. esLint
+```
+# http://editorconfig.org
+
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false
+```
+
+### eslint
 ```
 npm i eslint eslint-plugin-import eslint-watch -D
 ```
+
 Create eslint configuration file
 ```
 eslint --init
 ```
-+ extension: esLint for Visual Studio Code
 
-### 12. CI
-Travis
++ extension: eslint for Visual Studio Code
 
-Create ".travis.yml"
+### Travis
 
-### 13. LICENSE MIT
+.travis.yml
+```js
+language: node_js
+node_js:
+  - "6"
+```
 
-### 14. gitignore
+### LICENSE 
+MIT
+
+### .gitignore

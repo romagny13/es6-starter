@@ -1,1 +1,1 @@
-require('./firstSpec');
+require('./class1.spec');
